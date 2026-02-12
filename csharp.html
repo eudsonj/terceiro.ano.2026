@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo de Carro Estilizado</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #222; }
+    canvas { display: block; margin: auto; background: #444; }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let car = { x: 280, y: 300, width: 40, height: 60, color: "red", speed: 0 };
+    let keys = {};
+
+    document.addEventListener("keydown", e => keys[e.key] = true);
+    document.addEventListener("keyup", e => keys[e.key] = false);
+
+    function update() {
+      if (keys["ArrowUp"]) car.speed = 3;
+      else if (keys["ArrowDown"]) car.speed = -2;
+      else car.speed = 0;
+
+      if (keys["ArrowLeft"]) car.x -= 3;
+      if (keys["ArrowRight"]) car.x += 3;
+
+      car.y -= car.speed;
+
+      // Limites da pista
+      if (car.x < 0) car.x = 0;
+      if (car.x + car.width > canvas.width) car.x = canvas.width - car.width;
+      if (car.y < 0) car.y = 0;
+      if (car.y + car.height > canvas.height) car.y = canvas.height - car.height;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Pista
+      ctx.fillStyle = "#333";
+      ctx.fillRect(100, 0, 400, canvas.height);
+
+      // Carro
+      ctx.fillStyle = car.color;
+      ctx.fillRect(car.x, car.y, car.width, car.height);
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
