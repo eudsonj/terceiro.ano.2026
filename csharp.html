@@ -2,51 +2,94 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Jogo de Carro Estilizado</title>
+  <title>Bate-Bate Estilizado</title>
   <style>
-    body { margin: 0; overflow: hidden; background: #222; }
-    canvas { display: block; margin: auto; background: #444; }
+    body { margin: 0; background: #111; color: white; font-family: Arial, sans-serif; text-align: center; }
+    canvas { background: linear-gradient(#333, #111); display: block; margin: 20px auto; border: 4px solid #fff; }
+    h1 { margin-top: 10px; }
   </style>
 </head>
 <body>
+  <h1>🚗 Jogo de Bate-Bate Estilizado 🚗</h1>
   <canvas id="gameCanvas" width="600" height="400"></canvas>
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    let car = { x: 280, y: 300, width: 40, height: 60, color: "red", speed: 0 };
+    // Carro do jogador
+    let player = { x: 280, y: 300, width: 40, height: 60, color: "red", speed: 4 };
+
+    // Inimigos (carros para bater)
+    let enemies = [];
+    for (let i = 0; i < 5; i++) {
+      enemies.push({
+        x: Math.random() * 560,
+        y: Math.random() * 200,
+        width: 40,
+        height: 60,
+        color: "blue",
+        dx: (Math.random() - 0.5) * 4,
+        dy: (Math.random() - 0.5) * 4
+      });
+    }
+
     let keys = {};
+    let score = 0;
 
     document.addEventListener("keydown", e => keys[e.key] = true);
     document.addEventListener("keyup", e => keys[e.key] = false);
 
     function update() {
-      if (keys["ArrowUp"]) car.speed = 3;
-      else if (keys["ArrowDown"]) car.speed = -2;
-      else car.speed = 0;
+      // Movimento do jogador
+      if (keys["ArrowUp"]) player.y -= player.speed;
+      if (keys["ArrowDown"]) player.y += player.speed;
+      if (keys["ArrowLeft"]) player.x -= player.speed;
+      if (keys["ArrowRight"]) player.x += player.speed;
 
-      if (keys["ArrowLeft"]) car.x -= 3;
-      if (keys["ArrowRight"]) car.x += 3;
+      // Limites da tela
+      if (player.x < 0) player.x = 0;
+      if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+      if (player.y < 0) player.y = 0;
+      if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
 
-      car.y -= car.speed;
+      // Movimento dos inimigos
+      enemies.forEach(enemy => {
+        enemy.x += enemy.dx;
+        enemy.y += enemy.dy;
 
-      // Limites da pista
-      if (car.x < 0) car.x = 0;
-      if (car.x + car.width > canvas.width) car.x = canvas.width - car.width;
-      if (car.y < 0) car.y = 0;
-      if (car.y + car.height > canvas.height) car.y = canvas.height - car.height;
+        // Rebater nas bordas
+        if (enemy.x < 0 || enemy.x + enemy.width > canvas.width) enemy.dx *= -1;
+        if (enemy.y < 0 || enemy.y + enemy.height > canvas.height) enemy.dy *= -1;
+
+        // Colisão com jogador
+        if (player.x < enemy.x + enemy.width &&
+            player.x + player.width > enemy.x &&
+            player.y < enemy.y + enemy.height &&
+            player.y + player.height > enemy.y) {
+          score++;
+          enemy.x = Math.random() * 560;
+          enemy.y = Math.random() * 200;
+        }
+      });
     }
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Pista
-      ctx.fillStyle = "#333";
-      ctx.fillRect(100, 0, 400, canvas.height);
+      // Carro do jogador
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
 
-      // Carro
-      ctx.fillStyle = car.color;
-      ctx.fillRect(car.x, car.y, car.width, car.height);
+      // Inimigos
+      enemies.forEach(enemy => {
+        ctx.fillStyle = enemy.color;
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+      });
+
+      // Pontuação
+      ctx.fillStyle = "white";
+      ctx.font = "20px Arial";
+      ctx.fillText("Pontuação: " + score, 10, 20);
     }
 
     function gameLoop() {
